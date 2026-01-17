@@ -2,89 +2,296 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kali Secure Chat</title>
+<title>Secure Chat</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-body {
+* {
     margin: 0;
-    font-family: "Courier New", monospace;
-    background: #0b0f0c;
-    color: #00ff88;
+    padding: 0;
+    box-sizing: border-box;
 }
-
+body {
+    font-family: "Fira Code", "Consolas", monospace;
+    background: linear-gradient(135deg, #0a0e0d 0%, #1a1f1e 100%);
+    color: #00ff41;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow-x: hidden;
+}
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            rgba(0, 255, 65, 0.03) 0px,
+            transparent 1px,
+            transparent 2px,
+            rgba(0, 255, 65, 0.03) 3px
+        );
+    pointer-events: none;
+    z-index: 1;
+}
 .container {
-    max-width: 800px;
-    margin: auto;
+    max-width: 900px;
+    width: 100%;
     padding: 20px;
+    position: relative;
+    z-index: 2;
 }
-
+.terminal-window {
+    background: rgba(10, 14, 13, 0.95);
+    border: 2px solid #00ff41;
+    border-radius: 8px;
+    box-shadow: 
+        0 0 20px rgba(0, 255, 65, 0.3),
+        inset 0 0 60px rgba(0, 255, 65, 0.05);
+    overflow: hidden;
+}
+.terminal-header {
+    background: linear-gradient(180deg, #1a2f1e 0%, #0f1f13 100%);
+    border-bottom: 1px solid #00ff41;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ff5f56;
+    box-shadow: 0 0 5px rgba(255, 95, 86, 0.5);
+}
+.terminal-dot:nth-child(2) {
+    background: #ffbd2e;
+    box-shadow: 0 0 5px rgba(255, 189, 46, 0.5);
+}
+.terminal-dot:nth-child(3) {
+    background: #27c93f;
+    box-shadow: 0 0 5px rgba(39, 201, 63, 0.5);
+}
+.terminal-title {
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #00ff41;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+.terminal-body {
+    padding: 30px;
+}
 h1 {
     text-align: center;
-    text-shadow: 0 0 10px #00ff88;
+    font-size: 28px;
+    margin-bottom: 30px;
+    letter-spacing: 3px;
+    color: #00ff41;
+    text-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
+    font-weight: 700;
 }
-
+h1::before {
+    content: "⚡ ";
+}
+h1::after {
+    content: " ⚡";
+}
+.input-group {
+    margin-bottom: 15px;
+}
+.input-label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #00cc33;
+}
 input, button {
     width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    background: #020403;
-    border: 1px solid #00ff88;
-    color: #00ff88;
+    padding: 14px 18px;
+    background: rgba(0, 20, 10, 0.8);
+    border: 1px solid #00ff41;
+    color: #00ff41;
     font-family: inherit;
+    font-size: 14px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
 }
-
+input:focus {
+    outline: none;
+    border-color: #00ff88;
+    box-shadow: 
+        0 0 10px rgba(0, 255, 65, 0.3),
+        inset 0 0 20px rgba(0, 255, 65, 0.05);
+}
+input::placeholder {
+    color: rgba(0, 255, 65, 0.4);
+}
 button {
     cursor: pointer;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+    position: relative;
+    overflow: hidden;
 }
-
+button::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(0, 255, 65, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+button:hover::before {
+    width: 300px;
+    height: 300px;
+}
 button:hover {
-    background: #00ff88;
+    background: #00ff41;
     color: #000;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
 }
-
+button:active {
+    transform: scale(0.98);
+}
 .hidden {
     display: none;
 }
-
 #chatBox {
-    height: 350px;
+    height: 400px;
     overflow-y: auto;
-    border: 1px solid #00ff88;
-    padding: 10px;
-    margin-bottom: 10px;
-    background: #020403;
+    border: 1px solid #00ff41;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: rgba(0, 10, 5, 0.6);
+    border-radius: 4px;
+    box-shadow: inset 0 0 30px rgba(0, 255, 65, 0.05);
 }
-
+#chatBox::-webkit-scrollbar {
+    width: 8px;
+}
+#chatBox::-webkit-scrollbar-track {
+    background: rgba(0, 20, 10, 0.5);
+}
+#chatBox::-webkit-scrollbar-thumb {
+    background: #00ff41;
+    border-radius: 4px;
+}
+#chatBox::-webkit-scrollbar-thumb:hover {
+    background: #00cc33;
+}
 .msg {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: rgba(0, 255, 65, 0.05);
+    border-left: 3px solid #00ff41;
+    border-radius: 2px;
+    animation: fadeIn 0.3s ease;
 }
-
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 .user {
     color: #00ffaa;
+    font-weight: 700;
+    text-shadow: 0 0 5px rgba(0, 255, 170, 0.5);
+}
+.timestamp {
+    color: rgba(0, 255, 65, 0.5);
+    font-size: 11px;
+    margin-left: 8px;
+}
+.btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #00ff41;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+    animation: pulse 2s infinite;
+    margin-right: 8px;
+}
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
 }
 </style>
 </head>
-
 <body>
-
 <div class="container">
-<h1>💀 Kali Secure Chat</h1>
-
-<!-- LOGIN -->
-<div id="loginBox">
-    <input type="email" id="email" placeholder="email@domain.com">
-    <input type="password" id="password" placeholder="password">
-    <button onclick="login()">Login</button>
-    <button onclick="register()">Register</button>
-</div>
-
-<!-- CHAT -->
-<div id="chatBoxUI" class="hidden">
-    <div id="chatBox"></div>
-    <input type="text" id="message" placeholder="Type message...">
-    <button onclick="sendMessage()">Send</button>
-    <button onclick="logout()">Logout</button>
+<div class="terminal-window">
+    <div class="terminal-header">
+        <div class="terminal-dot"></div>
+        <div class="terminal-dot"></div>
+        <div class="terminal-dot"></div>
+        <div class="terminal-title">Encrypted Communication Channel</div>
+    </div>
+    <div class="terminal-body">
+        <h1>Secure Chat</h1>
+        
+        <!-- LOGIN -->
+        <div id="loginBox">
+            <div class="input-group">
+                <label class="input-label">Email Address</label>
+                <input type="email" id="email" placeholder="user@domain.com">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Password</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+            <div class="btn-group">
+                <button onclick="login()">Login</button>
+                <button onclick="register()">Register</button>
+            </div>
+        </div>
+        
+        <!-- CHAT -->
+        <div id="chatBoxUI" class="hidden">
+            <div style="margin-bottom: 10px; color: rgba(0, 255, 65, 0.7); font-size: 12px;">
+                <span class="status-indicator"></span>SECURE CONNECTION ESTABLISHED
+            </div>
+            <div id="chatBox"></div>
+            <input type="text" id="message" placeholder="Enter encrypted message...">
+            <div class="btn-group">
+                <button onclick="sendMessage()">Send Message</button>
+                <button onclick="logout()">Disconnect</button>
+            </div>
+        </div>
+    </div>
 </div>
 </div>
 
@@ -92,7 +299,6 @@ button:hover {
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script>
 /* 🔥 Firebase Config */
 const firebaseConfig = {
@@ -103,13 +309,10 @@ const firebaseConfig = {
   messagingSenderId: "621608777112",
   appId: "1:621608777112:web:7f7a37c0473c99ed8627ed"
 };
-
 /* Initialize Firebase */
 firebase.initializeApp(firebaseConfig);
-
 const auth = firebase.auth();
 const db = firebase.firestore();
-
 /* Auth State */
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -121,7 +324,6 @@ auth.onAuthStateChanged(user => {
         chatBoxUI.classList.add("hidden");
     }
 });
-
 /* Login */
 function login() {
     auth.signInWithEmailAndPassword(
@@ -129,7 +331,6 @@ function login() {
         password.value
     ).catch(err => alert(err.message));
 }
-
 /* Register */
 function register() {
     auth.createUserWithEmailAndPassword(
@@ -137,25 +338,20 @@ function register() {
         password.value
     ).catch(err => alert(err.message));
 }
-
 /* Logout */
 function logout() {
     auth.signOut();
 }
-
 /* Send Message */
 function sendMessage() {
     if (!message.value) return;
-
     db.collection("messages").add({
         text: message.value,
         user: auth.currentUser.email,
         time: firebase.firestore.FieldValue.serverTimestamp()
     });
-
     message.value = "";
 }
-
 /* Load Messages */
 function loadMessages() {
     db.collection("messages")
@@ -173,6 +369,5 @@ function loadMessages() {
     });
 }
 </script>
-
 </body>
 </html>
