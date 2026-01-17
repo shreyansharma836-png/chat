@@ -1,459 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kali Chat Terminal</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<title>Kali Secure Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body {
-            font-family: 'Courier New', monospace;
-            background: #0a0a0a;
-            color: #00ff00;
-            overflow: hidden;
-        }
+<style>
+body {
+    margin: 0;
+    font-family: "Courier New", monospace;
+    background: #0b0f0c;
+    color: #00ff88;
+}
 
-        .login-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
-        }
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
 
-        .login-box {
-            background: #1e1e1e;
-            border: 2px solid #367bf0;
-            padding: 40px;
-            border-radius: 5px;
-            box-shadow: 0 0 20px rgba(54, 123, 240, 0.3);
-            width: 400px;
-        }
+h1 {
+    text-align: center;
+    text-shadow: 0 0 10px #00ff88;
+}
 
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+input, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background: #020403;
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    font-family: inherit;
+}
 
-        .kali-logo {
-            color: #367bf0;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+button {
+    cursor: pointer;
+}
 
-        .login-title {
-            color: #00ff00;
-            font-size: 18px;
-        }
+button:hover {
+    background: #00ff88;
+    color: #000;
+}
 
-        .input-group {
-            margin-bottom: 20px;
-        }
+.hidden {
+    display: none;
+}
 
-        .input-group label {
-            display: block;
-            color: #00ff00;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
+#chatBox {
+    height: 350px;
+    overflow-y: auto;
+    border: 1px solid #00ff88;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #020403;
+}
 
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            background: #0a0a0a;
-            border: 1px solid #367bf0;
-            border-radius: 3px;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-        }
+.msg {
+    margin-bottom: 8px;
+}
 
-        .input-group input:focus {
-            outline: none;
-            border-color: #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background: #367bf0;
-            border: none;
-            border-radius: 3px;
-            color: white;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 10px;
-        }
-
-        .btn:hover {
-            background: #2868d8;
-            box-shadow: 0 0 15px rgba(54, 123, 240, 0.5);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid #00ff00;
-            color: #00ff00;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(0, 255, 0, 0.1);
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
-        }
-
-        .error-msg {
-            color: #ff3333;
-            font-size: 12px;
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .chat-container {
-            display: none;
-            height: 100vh;
-            flex-direction: column;
-            background: #0a0a0a;
-        }
-
-        .chat-header {
-            background: #1e1e1e;
-            border-bottom: 2px solid #367bf0;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .terminal-icon {
-            color: #367bf0;
-            font-size: 20px;
-        }
-
-        .header-info {
-            color: #00ff00;
-            font-size: 14px;
-        }
-
-        .logout-btn {
-            padding: 8px 16px;
-            background: #ff3333;
-            border: none;
-            border-radius: 3px;
-            color: white;
-            font-family: 'Courier New', monospace;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .logout-btn:hover {
-            background: #cc0000;
-        }
-
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: #0a0a0a;
-        }
-
-        .message {
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #1e1e1e;
-            border-left: 3px solid #367bf0;
-            border-radius: 3px;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 12px;
-        }
-
-        .message-user {
-            color: #367bf0;
-            font-weight: bold;
-        }
-
-        .message-time {
-            color: #666;
-        }
-
-        .message-text {
-            color: #00ff00;
-            word-wrap: break-word;
-        }
-
-        .input-container {
-            background: #1e1e1e;
-            border-top: 2px solid #367bf0;
-            padding: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 12px;
-            background: #0a0a0a;
-            border: 1px solid #367bf0;
-            border-radius: 3px;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-        }
-
-        .message-input:focus {
-            outline: none;
-            border-color: #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
-        }
-
-        .send-btn {
-            padding: 12px 24px;
-            background: #00ff00;
-            border: none;
-            border-radius: 3px;
-            color: #0a0a0a;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .send-btn:hover {
-            background: #00cc00;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
-        }
-
-        .messages-container::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        .messages-container::-webkit-scrollbar-track {
-            background: #1e1e1e;
-        }
-
-        .messages-container::-webkit-scrollbar-thumb {
-            background: #367bf0;
-            border-radius: 5px;
-        }
-
-        .messages-container::-webkit-scrollbar-thumb:hover {
-            background: #2868d8;
-        }
-    </style>
+.user {
+    color: #00ffaa;
+}
+</style>
 </head>
+
 <body>
-    <!-- Login Page -->
-    <div class="login-container" id="loginContainer">
-        <div class="login-box">
-            <div class="login-header">
-                <div class="kali-logo">┌──(kali㉿chat)-[~]</div>
-                <div class="login-title">└─$ Terminal Chat Access</div>
-            </div>
-            <div class="input-group">
-                <label>root@email:</label>
-                <input type="email" id="loginEmail" placeholder="user@kali.local">
-            </div>
-            <div class="input-group">
-                <label>root@password:</label>
-                <input type="password" id="loginPassword" placeholder="••••••••">
-            </div>
-            <button class="btn" onclick="login()">LOGIN</button>
-            <button class="btn btn-secondary" onclick="toggleSignup()">CREATE ACCOUNT</button>
-            <div class="error-msg" id="loginError"></div>
-        </div>
-    </div>
 
-    <!-- Chat Page -->
-    <div class="chat-container" id="chatContainer">
-        <div class="chat-header">
-            <div class="header-title">
-                <span class="terminal-icon">▶</span>
-                <span class="header-info">root@kali-chat:~# <span id="userEmail"></span></span>
-            </div>
-            <button class="logout-btn" onclick="logout()">LOGOUT</button>
-        </div>
-        <div class="messages-container" id="messagesContainer"></div>
-        <div class="input-container">
-            <input type="text" class="message-input" id="messageInput" placeholder="root@message:~# Type your message...">
-            <button class="send-btn" onclick="sendMessage()">SEND</button>
-        </div>
-    </div>
+<div class="container">
+<h1>💀 Kali Secure Chat</h1>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getDatabase, ref, push, onChildAdded, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+<!-- LOGIN -->
+<div id="loginBox">
+    <input type="email" id="email" placeholder="email@domain.com">
+    <input type="password" id="password" placeholder="password">
+    <button onclick="login()">Login</button>
+    <button onclick="register()">Register</button>
+</div>
 
-        // TODO: Replace with your Firebase config
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            databaseURL: "YOUR_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+<!-- CHAT -->
+<div id="chatBoxUI" class="hidden">
+    <div id="chatBox"></div>
+    <input type="text" id="message" placeholder="Type message...">
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="logout()">Logout</button>
+</div>
+</div>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+<!-- Firebase SDKs (COMPAT ONLY) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-        window.currentUser = null;
-        let isSignupMode = false;
+<script>
+/* 🔥 Firebase Config */
+const firebaseConfig = {
+  apiKey: "AIzaSyCPtbRGBA70RVc__8zGMPwv8ADSYbGl9Bc",
+  authDomain: "chat-abc20.firebaseapp.com",
+  projectId: "chat-abc20",
+  storageBucket: "chat-abc20.appspot.com",
+  messagingSenderId: "621608777112",
+  appId: "1:621608777112:web:7f7a37c0473c99ed8627ed"
+};
 
-        // Auth state observer
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.currentUser = user;
-                showChat();
-                loadMessages();
-            } else {
-                window.currentUser = null;
-                showLogin();
-            }
+/* Initialize Firebase */
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* Auth State */
+auth.onAuthStateChanged(user => {
+    if (user) {
+        loginBox.classList.add("hidden");
+        chatBoxUI.classList.remove("hidden");
+        loadMessages();
+    } else {
+        loginBox.classList.remove("hidden");
+        chatBoxUI.classList.add("hidden");
+    }
+});
+
+/* Login */
+function login() {
+    auth.signInWithEmailAndPassword(
+        email.value,
+        password.value
+    ).catch(err => alert(err.message));
+}
+
+/* Register */
+function register() {
+    auth.createUserWithEmailAndPassword(
+        email.value,
+        password.value
+    ).catch(err => alert(err.message));
+}
+
+/* Logout */
+function logout() {
+    auth.signOut();
+}
+
+/* Send Message */
+function sendMessage() {
+    if (!message.value) return;
+
+    db.collection("messages").add({
+        text: message.value,
+        user: auth.currentUser.email,
+        time: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    message.value = "";
+}
+
+/* Load Messages */
+function loadMessages() {
+    db.collection("messages")
+    .orderBy("time")
+    .onSnapshot(snapshot => {
+        chatBox.innerHTML = "";
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            chatBox.innerHTML += `
+              <div class="msg">
+                <span class="user">[${data.user}]</span> ${data.text}
+              </div>`;
         });
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+</script>
 
-        // Login function
-        window.login = async () => {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const errorMsg = document.getElementById('loginError');
-
-            if (!email || !password) {
-                errorMsg.textContent = 'ERROR: Email and password required';
-                return;
-            }
-
-            try {
-                if (isSignupMode) {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                    errorMsg.textContent = '';
-                } else {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    errorMsg.textContent = '';
-                }
-            } catch (error) {
-                errorMsg.textContent = `ERROR: ${error.message}`;
-            }
-        };
-
-        // Toggle signup mode
-        window.toggleSignup = () => {
-            isSignupMode = !isSignupMode;
-            const btn = document.querySelector('.btn-secondary');
-            btn.textContent = isSignupMode ? 'BACK TO LOGIN' : 'CREATE ACCOUNT';
-            document.querySelector('.btn').textContent = isSignupMode ? 'SIGN UP' : 'LOGIN';
-        };
-
-        // Logout function
-        window.logout = async () => {
-            await signOut(auth);
-        };
-
-        // Send message
-        window.sendMessage = async () => {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-
-            if (!message || !window.currentUser) return;
-
-            const messagesRef = ref(db, 'messages');
-            await push(messagesRef, {
-                text: message,
-                email: window.currentUser.email,
-                timestamp: serverTimestamp()
-            });
-
-            input.value = '';
-        };
-
-        // Load messages
-        function loadMessages() {
-            const messagesRef = ref(db, 'messages');
-            const container = document.getElementById('messagesContainer');
-            
-            onChildAdded(messagesRef, (snapshot) => {
-                const msg = snapshot.val();
-                const msgDiv = document.createElement('div');
-                msgDiv.className = 'message';
-                
-                const time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : 'Now';
-                
-                msgDiv.innerHTML = `
-                    <div class="message-header">
-                        <span class="message-user">${msg.email}</span>
-                        <span class="message-time">${time}</span>
-                    </div>
-                    <div class="message-text">${escapeHtml(msg.text)}</div>
-                `;
-                
-                container.appendChild(msgDiv);
-                container.scrollTop = container.scrollHeight;
-            });
-        }
-
-        // Show/hide pages
-        function showLogin() {
-            document.getElementById('loginContainer').style.display = 'flex';
-            document.getElementById('chatContainer').style.display = 'none';
-        }
-
-        function showChat() {
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('chatContainer').style.display = 'flex';
-            document.getElementById('userEmail').textContent = window.currentUser.email;
-        }
-
-        // Escape HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Enter key support
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('loginPassword').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') window.login();
-            });
-            
-            document.getElementById('messageInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') window.sendMessage();
-            });
-        });
-    </script>
 </body>
 </html>
