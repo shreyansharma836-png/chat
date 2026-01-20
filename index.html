@@ -5,6 +5,7 @@
   <title>Chat App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    /* [Previous CSS remains exactly the same until sidebar styles] */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f4f5; height: 100vh; overflow: hidden; transition: background 0.3s ease; }
     body.dark-mode { background: #0e1621; }
@@ -21,6 +22,17 @@
     body.dark-mode .modal { background: rgba(0,0,0,0.7); }
     body.dark-mode .modal-content { background: #17212b; border-color: #0e1621; }
     body.dark-mode .modal-input { background: #0e1621; border-color: #0e1621; color: #f5f5f5; }
+    
+    /* Sidebar tabs */
+    .sidebar-tabs { display: flex; border-bottom: 1px solid #e1e3e6; }
+    .tab-btn { flex: 1; padding: 12px; background: none; border: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .tab-btn.active { background: #667eea; color: white; }
+    body.dark-mode .tab-btn { color: #f5f5f5; }
+    body.dark-mode .tab-btn.active { background: #5568d3; }
+    
+    .tab-content { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+    .tab-content.active { display: flex; }
+    
     .app-container { display: flex; height: 100vh; background: white; transition: background 0.3s ease; }
     .sidebar { width: 320px; background: white; border-right: 1px solid #e1e3e6; display: flex; flex-direction: column; transition: all 0.3s ease; }
     .sidebar-header { padding: 16px 20px; border-bottom: 1px solid #e1e3e6; display: flex; align-items: center; justify-content: space-between; }
@@ -31,28 +43,37 @@
     body.dark-mode .theme-toggle:hover { background: #3d6a94; }
     .theme-toggle::after { content: '☀️'; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; font-size: 11px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     body.dark-mode .theme-toggle::after { content: '🌙'; left: 22px; }
-    .online-users-list { flex: 1; overflow-y: auto; padding: 8px; }
-    .online-users-list::-webkit-scrollbar { width: 6px; }
-    .online-users-list::-webkit-scrollbar-thumb { background: #d1d3d6; border-radius: 3px; }
-    .online-user { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; margin-bottom: 2px; cursor: pointer; transition: background 0.2s; }
-    .online-user:hover { background: #f4f4f5; }
-    .online-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; position: relative; flex-shrink: 0; }
+    
+    .online-users-list, .private-chats-list { flex: 1; overflow-y: auto; padding: 8px; }
+    .online-users-list::-webkit-scrollbar, .private-chats-list::-webkit-scrollbar { width: 6px; }
+    .online-users-list::-webkit-scrollbar-thumb, .private-chats-list::-webkit-scrollbar-thumb { background: #d1d3d6; border-radius: 3px; }
+    
+    .online-user, .private-chat { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; margin-bottom: 2px; cursor: pointer; transition: background 0.2s; }
+    .online-user:hover, .private-chat:hover, .private-chat.active { background: #f4f4f5; }
+    body.dark-mode .online-user:hover, body.dark-mode .private-chat:hover, body.dark-mode .private-chat.active { background: rgba(255,255,255,0.05); }
+    
+    .online-avatar, .chat-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; position: relative; flex-shrink: 0; }
     .admin-badge { position: absolute; top: -2px; right: -2px; background: #ffd700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid white; }
     body.dark-mode .admin-badge { border-color: #17212b; }
     .online-indicator { width: 12px; height: 12px; background: #00c853; border: 2px solid white; border-radius: 50%; position: absolute; bottom: 0; right: 0; }
     body.dark-mode .online-indicator { border-color: #17212b; }
-    .online-info { flex: 1; min-width: 0; }
-    .online-email { font-size: 15px; color: #2c2c2c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
-    body.dark-mode .online-email { color: #f5f5f5; }
-    .online-status { font-size: 13px; color: #7e8b99; margin-top: 2px; }
+    .online-info, .chat-info { flex: 1; min-width: 0; }
+    .online-email, .chat-name { font-size: 15px; color: #2c2c2c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+    body.dark-mode .online-email, body.dark-mode .chat-name { color: #f5f5f5; }
+    .online-status, .chat-last-msg { font-size: 13px; color: #7e8b99; margin-top: 2px; }
+    
     .chat-area { flex: 1; display: flex; flex-direction: column; background: #f4f4f5; }
     .header { padding: 16px 24px; background: white; border-bottom: 1px solid #e1e3e6; display: flex; align-items: center; justify-content: space-between; }
     .header-title { font-size: 18px; font-weight: 600; color: #2c2c2c; }
     body.dark-mode .header-title { color: #f5f5f5; }
+    .back-to-group-btn { padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-right: 12px; display: none; }
+    .back-to-group-btn:hover { background: #5568d3; }
     .logout-btn { padding: 8px 16px; background: transparent; color: #667eea; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
     .logout-btn:hover { background: rgba(102, 126, 234, 0.1); }
     .admin-alert-btn { padding: 8px 16px; background: #ff9800; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-right: 12px; }
     .admin-alert-btn:hover { background: #f57c00; }
+    
+    /* [Rest of the existing CSS remains exactly the same] */
     .global-alert { background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 16px 24px; text-align: center; font-weight: 500; font-size: 15px; border-bottom: 2px solid #e65100; animation: slideDown 0.3s ease; position: relative; }
     .global-alert .close-alert { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 16px; transition: all 0.2s; }
     .global-alert .close-alert:hover { background: rgba(255,255,255,0.3); }
@@ -142,10 +163,25 @@
   <div class="app-container hidden" id="appContainer">
     <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-title">Online</div>
+        <div class="sidebar-title">Chat</div>
         <button class="theme-toggle" onclick="toggleTheme()"></button>
       </div>
-      <div class="online-users-list" id="onlineUsers"></div>
+      
+      <!-- New tab system -->
+      <div class="sidebar-tabs">
+        <button class="tab-btn active" onclick="switchTab('online')">Online</button>
+        <button class="tab-btn" onclick="switchTab('private')">Private</button>
+      </div>
+      
+      <!-- Online Users Tab -->
+      <div class="tab-content active" id="onlineTab">
+        <div class="online-users-list" id="onlineUsers"></div>
+      </div>
+      
+      <!-- Private Chats Tab -->
+      <div class="tab-content" id="privateTab">
+        <div class="private-chats-list" id="privateChats"></div>
+      </div>
     </div>
 
     <div class="chat-area">
@@ -153,7 +189,8 @@
       <div class="header">
         <div style="display: flex; align-items: center;">
           <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
-          <div class="header-title">Chat Room</div>
+          <button class="back-to-group-btn" id="backBtn" onclick="backToGroupChat()">← Back to Group</button>
+          <div class="header-title" id="chatTitle">Chat Room</div>
         </div>
         <div style="display: flex; align-items: center;">
           <button class="admin-alert-btn hidden" id="adminAlertBtn" onclick="openAlertModal()">📢 Send Alert</button>
@@ -178,6 +215,7 @@
     </div>
   </div>
 
+  <!-- Existing modals remain the same -->
   <div class="modal" id="editModal">
     <div class="modal-content">
       <div class="modal-title">Edit Message</div>
@@ -220,8 +258,9 @@
     let selectedImage = null;
     let presenceInterval = null;
     let editingMessageId = null;
+    let currentPrivateChat = null; // Track current private chat
+    let savedTheme = localStorage.getItem('theme') || 'light';
 
-    const savedTheme = localStorage.getItem('theme') || 'light';
     if (savedTheme === 'dark') {
       document.body.classList.add('dark-mode');
     }
@@ -240,6 +279,34 @@
       document.getElementById('sidebar').classList.toggle('mobile-open');
     }
 
+    function switchTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.getElementById(tab + 'Tab').classList.add('active');
+    }
+
+    function startPrivateChat(targetUserEmail) {
+      currentPrivateChat = targetUserEmail;
+      document.getElementById('chatTitle').textContent = targetUserEmail;
+      document.getElementById('backBtn').style.display = 'inline-block';
+      document.getElementById('adminAlertBtn').style.display = 'none';
+      loadPrivateMessages(targetUserEmail);
+    }
+
+    function backToGroupChat() {
+      currentPrivateChat = null;
+      document.getElementById('chatTitle').textContent = 'Chat Room';
+      document.getElementById('backBtn').style.display = 'none';
+      if (isAdmin(auth.currentUser?.email)) {
+        document.getElementById('adminAlertBtn').style.display = 'inline-block';
+      }
+      loadMessages();
+    }
+
     auth.onAuthStateChanged(user => {
       if (user) {
         loginBox.classList.add("hidden");
@@ -247,9 +314,9 @@
         loadMessages();
         updateOnlineStatus(true);
         loadOnlineUsers();
+        loadPrivateChats();
         loadGlobalAlert();
         
-        // Show admin alert button if user is admin
         if (isAdmin(user.email)) {
           document.getElementById('adminAlertBtn').classList.remove('hidden');
         }
@@ -297,10 +364,10 @@
     }
 
     function sendMessage() {
-      if (!message.value && !selectedImage) return;
+      if (!message.value.trim() && !selectedImage) return;
 
       const msgData = {
-        text: message.value,
+        text: message.value.trim(),
         user: auth.currentUser.email,
         time: firebase.firestore.FieldValue.serverTimestamp(),
         edited: false
@@ -310,15 +377,30 @@
         msgData.image = selectedImage;
       }
 
-      db.collection("messages").add(msgData);
+      if (currentPrivateChat) {
+        // Send private message
+        const chatId = [auth.currentUser.email, currentPrivateChat].sort().join('_');
+        db.collection("privateChats").doc(chatId).collection("messages").add(msgData);
+      } else {
+        // Send group message
+        db.collection("messages").add(msgData);
+      }
+
       message.value = "";
       clearImage();
     }
 
+    // [Existing deleteMessage, editMessage, closeEditModal, saveEdit functions remain the same]
     function deleteMessage(messageId) {
       if (confirm('Are you sure you want to delete this message?')) {
-        db.collection("messages").doc(messageId).delete()
-          .catch(err => alert('Error deleting message: ' + err.message));
+        if (currentPrivateChat) {
+          const chatId = [auth.currentUser.email, currentPrivateChat].sort().join('_');
+          db.collection("privateChats").doc(chatId).collection("messages").doc(messageId).delete()
+            .catch(err => alert('Error deleting message: ' + err.message));
+        } else {
+          db.collection("messages").doc(messageId).delete()
+            .catch(err => alert('Error deleting message: ' + err.message));
+        }
       }
     }
 
@@ -337,15 +419,22 @@
     function saveEdit() {
       if (!editingMessageId || !editInput.value.trim()) return;
 
-      db.collection("messages").doc(editingMessageId).update({
+      const updateData = {
         text: editInput.value.trim(),
         edited: true,
         editedAt: firebase.firestore.FieldValue.serverTimestamp()
-      })
-      .then(() => {
-        closeEditModal();
-      })
-      .catch(err => alert('Error editing message: ' + err.message));
+      };
+
+      if (currentPrivateChat) {
+        const chatId = [auth.currentUser.email, currentPrivateChat].sort().join('_');
+        db.collection("privateChats").doc(chatId).collection("messages").doc(editingMessageId).update(updateData)
+          .then(() => closeEditModal())
+          .catch(err => alert('Error editing message: ' + err.message));
+      } else {
+        db.collection("messages").doc(editingMessageId).update(updateData)
+          .then(() => closeEditModal())
+          .catch(err => alert('Error editing message: ' + err.message));
+      }
     }
 
     function loadMessages() {
@@ -359,54 +448,78 @@
           snapshot.forEach(doc => {
             const data = doc.data();
             const messageId = doc.id;
-            const initial = data.user.charAt(0).toUpperCase();
-            const timeStr = data.time ? new Date(data.time.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
-            
-            const canEdit = currentUserIsAdmin || data.user === currentUserEmail;
-            const canDelete = currentUserIsAdmin;
-
-            let actionsHtml = '';
-            if (canEdit || canDelete) {
-              actionsHtml = '<div class="message-actions">';
-              if (canEdit && data.text) {
-                const escapedText = (data.text || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                actionsHtml += `<button class="action-btn edit" onclick="editMessage('${messageId}', '${escapedText}')">✏️</button>`;
-              }
-              if (canDelete) {
-                actionsHtml += `<button class="action-btn delete" onclick="deleteMessage('${messageId}')">🗑️</button>`;
-              }
-              actionsHtml += '</div>';
-            }
-
-            let content = '';
-            if (data.text || data.image) {
-              content = `<div class="message-bubble">`;
-              content += actionsHtml;
-              if (data.text) {
-                content += `<div class="msg-text">${data.text}</div>`;
-                if (data.edited) {
-                  content += `<div class="msg-edited">edited</div>`;
-                }
-              }
-              if (data.image) content += `<img src="${data.image}" class="msg-image">`;
-              content += `</div>`;
-            }
-
-            const adminBadge = isAdmin(data.user) ? '<span class="admin-badge">👑</span>' : '';
-
-            chatBox.innerHTML += `
-              <div class="message">
-                <div class="message-header">
-                  <div class="user-avatar">${initial}${adminBadge}</div>
-                  <span class="user-name">${data.user}${isAdmin(data.user) ? ' (Admin)' : ''}</span>
-                  <span class="msg-time">${timeStr}</span>
-                </div>
-                ${content}
-              </div>
-            `;
+            renderMessage(data, messageId, currentUserEmail, currentUserIsAdmin, false);
           });
           chatBox.scrollTop = chatBox.scrollHeight;
         });
+    }
+
+    function loadPrivateMessages(targetUserEmail) {
+      const chatId = [auth.currentUser.email, targetUserEmail].sort().join('_');
+      
+      db.collection("privateChats")
+        .doc(chatId)
+        .collection("messages")
+        .orderBy("time")
+        .onSnapshot(snapshot => {
+          chatBox.innerHTML = "";
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const messageId = doc.id;
+            const currentUserEmail = auth.currentUser?.email;
+            const currentUserIsAdmin = isAdmin(currentUserEmail);
+            renderMessage(data, messageId, currentUserEmail, currentUserIsAdmin, true);
+          });
+          chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    }
+
+    function renderMessage(data, messageId, currentUserEmail, currentUserIsAdmin, isPrivate) {
+      const initial = data.user.charAt(0).toUpperCase();
+      const timeStr = data.time ? new Date(data.time.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+      
+      const canEdit = currentUserIsAdmin || data.user === currentUserEmail;
+      const canDelete = currentUserIsAdmin;
+
+      let actionsHtml = '';
+      if (canEdit || canDelete) {
+        actionsHtml = '<div class="message-actions">';
+        if (canEdit && data.text) {
+          const escapedText = (data.text || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+          actionsHtml += `<button class="action-btn edit" onclick="editMessage('${messageId}', '${escapedText}')">✏️</button>`;
+        }
+        if (canDelete) {
+          actionsHtml += `<button class="action-btn delete" onclick="deleteMessage('${messageId}')">🗑️</button>`;
+        }
+        actionsHtml += '</div>';
+      }
+
+      let content = '';
+      if (data.text || data.image) {
+        content = `<div class="message-bubble">`;
+        content += actionsHtml;
+        if (data.text) {
+          content += `<div class="msg-text">${data.text}</div>`;
+          if (data.edited) {
+            content += `<div class="msg-edited">edited</div>`;
+          }
+        }
+        if (data.image) content += `<img src="${data.image}" class="msg-image">`;
+        content += `</div>`;
+      }
+
+      const adminBadge = isAdmin(data.user) ? '<span class="admin-badge">👑</span>' : '';
+
+      chatBox.innerHTML += `
+        <div class="message">
+          <div class="message-header">
+            <div class="user-avatar">${initial}${adminBadge}</div>
+            <span class="user-name">${data.user}${isAdmin(data.user) ? ' (Admin)' : ''}</span>
+            <span class="msg-time">${timeStr}</span>
+          </div>
+          ${content}
+        </div>
+      `;
     }
 
     function updateOnlineStatus(isOnline) {
@@ -443,7 +556,7 @@
           const adminBadge = data.isAdmin ? '<span class="admin-badge">👑</span>' : '';
 
           onlineUsers.innerHTML += `
-            <div class="online-user">
+            <div class="online-user" onclick="startPrivateChat('${data.email}')">
               <div class="online-avatar">
                 ${initial}
                 ${adminBadge}
@@ -451,12 +564,44 @@
               </div>
               <div class="online-info">
                 <div class="online-email">${data.email}${data.isAdmin ? ' (Admin)' : ''}</div>
-                <div class="online-status">online</div>
+                <div class="online-status">Click to chat privately</div>
               </div>
             </div>
           `;
         });
       });
+    }
+
+    function loadPrivateChats() {
+      // Listen for private chats involving current user
+      db.collectionGroup("messages")
+        .where("user", "==", auth.currentUser?.email)
+        .onSnapshot(snapshot => {
+          const chats = new Set();
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const chatRef = doc.ref.parent.parent;
+            chats.add(chatRef.id);
+          });
+
+          privateChats.innerHTML = "";
+          chats.forEach(chatId => {
+            // Extract other user's email from chatId
+            const [user1, user2] = chatId.split('_');
+            const otherUser = auth.currentUser.email === user1 ? user2 : user1;
+            const initial = otherUser.charAt(0).toUpperCase();
+
+            privateChats.innerHTML += `
+              <div class="private-chat" onclick="startPrivateChat('${otherUser}')">
+                <div class="chat-avatar">${initial}</div>
+                <div class="chat-info">
+                  <div class="chat-name">${otherUser}</div>
+                  <div class="chat-last-msg">Private chat</div>
+                </div>
+              </div>
+            `;
+          });
+        });
     }
 
     window.addEventListener('beforeunload', () => {
@@ -465,6 +610,7 @@
       }
     });
 
+    // [Existing alert functions remain exactly the same]
     function openAlertModal() {
       document.getElementById('alertModal').classList.add('active');
     }
