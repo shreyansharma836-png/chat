@@ -43,7 +43,6 @@
       overflow: hidden;
     }
 
-    /* Auth Screens */
     .auth-container {
       display: flex;
       align-items: center;
@@ -122,7 +121,6 @@
       text-decoration: none;
     }
 
-    /* Chat Container */
     .chat-container {
       display: none;
       height: 100vh;
@@ -134,7 +132,6 @@
       height: 100vh;
     }
 
-    /* Sidebar */
     .sidebar {
       width: var(--sidebar-width);
       background: var(--bg-primary);
@@ -258,7 +255,6 @@
       text-overflow: ellipsis;
     }
 
-    /* Main Chat Area */
     .main-area {
       flex: 1;
       display: flex;
@@ -422,7 +418,6 @@
       display: none;
     }
 
-    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -469,7 +464,6 @@
       color: var(--text-secondary);
     }
 
-    /* Loading */
     .loading {
       text-align: center;
       padding: 20px;
@@ -498,15 +492,6 @@
       border-radius: 6px;
       margin-bottom: 16px;
       font-size: 14px;
-    }
-
-    .admin-badge {
-      background: #e74c3c;
-      color: white;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 8px;
     }
 
     .empty-state {
@@ -542,7 +527,6 @@
   </style>
 </head>
 <body data-theme="light">
-  <!-- Auth Container -->
   <div id="authContainer" class="auth-container">
     <div class="auth-box">
       <div id="loginForm">
@@ -584,10 +568,8 @@
     </div>
   </div>
 
-  <!-- Chat Container -->
   <div id="chatContainer" class="chat-container">
     <div class="chat-layout">
-      <!-- Sidebar -->
       <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
           <div class="user-info">
@@ -614,7 +596,6 @@
         </div>
       </div>
 
-      <!-- Main Chat Area -->
       <div class="main-area" id="mainArea">
         <div class="empty-state" id="emptyState">
           <svg viewBox="0 0 24 24" fill="currentColor">
@@ -622,7 +603,7 @@
           </svg>
           <h3>Select a chat to start messaging</h3>
         </div>
-        <div id="chatView" style="display: none; flex: 1; display: flex; flex-direction: column;">
+        <div id="chatView" style="display: none; flex-direction: column; flex: 1;">
           <div class="chat-header">
             <div class="chat-header-info">
               <button class="icon-btn" onclick="showSidebar()" style="display: none;" id="backBtn">←</button>
@@ -654,7 +635,6 @@
     </div>
   </div>
 
-  <!-- Create Group Modal (Admin Only - No User Selection) -->
   <div id="createGroupModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -672,7 +652,6 @@
     </div>
   </div>
 
-  <!-- Admin Panel Modal -->
   <div id="adminPanelModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -685,13 +664,12 @@
       <div class="form-group">
         <label>Broadcast Message to All Users</label>
         <input type="text" id="broadcastMessage" placeholder="Enter broadcast message">
-        <button class="btn" onclick="sendBroadcast" style="margin-top: 8px;">Send Broadcast</button>
+        <button class="btn" onclick="sendBroadcast()" style="margin-top: 8px;">Send Broadcast</button>
       </div>
     </div>
   </div>
 
   <script type="module">
-    // Firebase Imports
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
     import { 
       getAuth, 
@@ -715,11 +693,9 @@
       orderBy, 
       onSnapshot, 
       serverTimestamp, 
-      Timestamp,
-      arrayUnion  // Added for auto-adding users
+      arrayUnion
     } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
-    // Firebase Configuration - REPLACE WITH YOUR CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyBjFAmFLH07JkEmL9jmXB3Suu6dC1xUvVM",
       authDomain: "chat2o-33113.firebaseapp.com",
@@ -729,35 +705,27 @@
       appId: "1:1074856844276:web:09e8f7728adb3c7a3db7a1"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Constants
-    const ADMIN_EMAIL = "imevidenceliveon.com";
-    const MAX_IMAGE_SIZE = 500000; // 500KB in bytes
+    const ADMIN_EMAIL = "imevidence@admin.com"; // Change this to your actual admin email
+    const MAX_IMAGE_SIZE = 500000;
 
-    // Global State
     window.currentUser = null;
     window.currentChat = null;
     window.unsubscribeMessages = null;
     window.allChats = [];
 
-    // Helper Functions for Base64 Encoding/Decoding
-    window.encodeBase64 = (text) => {
-      return btoa(unescape(encodeURIComponent(text)));
-    };
-
+    window.encodeBase64 = (text) => btoa(unescape(encodeURIComponent(text)));
     window.decodeBase64 = (encoded) => {
       try {
         return decodeURIComponent(escape(atob(encoded)));
       } catch (e) {
-        return encoded; // Return as-is if decoding fails
+        return encoded;
       }
     };
 
-    // Auth State Observer - FIXED with auto-add to all groups
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         window.currentUser = user;
@@ -767,19 +735,19 @@
         document.getElementById('authContainer').style.display = 'none';
         document.getElementById('chatContainer').style.display = 'block';
 
-        // Update user info
         document.getElementById('userName').textContent = userData?.name || user.email.split('@')[0];
         document.getElementById('userEmail').textContent = user.email;
         document.getElementById('userAvatar').textContent = userData?.name ? userData.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase();
 
-        // Show admin button if user is admin
-        if (user.email === ADMIN_EMAIL) {
+        // Only show admin button if email exactly matches
+        if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
           document.getElementById('adminBtn').style.display = 'block';
+        } else {
+          document.getElementById('adminBtn').style.display = 'none';
         }
         
         await loadChats();
 
-        // 🚀 NEW: Auto-add user to ALL existing groups after login
         const groupsQuery = query(collection(db, 'chats'), where('type', '==', 'group'));
         const groupsSnapshot = await getDocs(groupsQuery);
         groupsSnapshot.forEach(async (groupDoc) => {
@@ -789,10 +757,8 @@
             await updateDoc(doc(db, 'chats', groupId), {
               participants: arrayUnion(user.uid)
             });
-            console.log(`Auto-added ${user.email} to group ${groupData.name}`);
           }
         });
-
       } else {
         window.currentUser = null;
         document.getElementById('authContainer').style.display = 'flex';
@@ -800,7 +766,6 @@
       }
     });
 
-    // Auth Functions
     window.handleLogin = async () => {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
@@ -842,7 +807,6 @@
       try {
         errorEl.style.display = 'none';
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        // Create user document
         await setDoc(doc(db, 'users', userCredential.user.uid), {
           name,
           email,
@@ -874,17 +838,13 @@
       document.getElementById('registerError').style.display = 'none';
     };
 
-    // Chat Functions
     window.loadChats = async () => {
-      const chatsList = document.getElementById('chatsList');
-      // Listen to all chats where user is a participant
       const q = query(collection(db, 'chats'), where('participants', 'array-contains', window.currentUser.uid));
       onSnapshot(q, async (snapshot) => {
         const chats = [];
         for (const docSnap of snapshot.docs) {
           const chatData = docSnap.data();
           const chatId = docSnap.id;
-          // Get other participant info for private chats
           let chatName = chatData.name || 'Unknown';
           let chatType = chatData.type || 'private';
 
@@ -906,7 +866,6 @@
             updatedAt: chatData.updatedAt || chatData.createdAt
           });
         }
-        // Sort by most recent
         chats.sort((a, b) => {
           const timeA = a.updatedAt?.toMillis() || 0;
           const timeB = b.updatedAt?.toMillis() || 0;
@@ -927,7 +886,7 @@
         <div class="chat-item ${window.currentChat?.id === chat.id ? 'active' : ''}" onclick="openChat('${chat.id}')">
           <div class="chat-avatar">${chat.name.charAt(0).toUpperCase()}</div>
           <div class="chat-info">
-            <div class="chat-name">${chat.name}${chat.type === 'group' ? '<span style="font-size: 10px; color: var(--text-secondary);">Group</span>' : ''}</div>
+            <div class="chat-name">${chat.name}${chat.type === 'group' ? ' <span style="font-size: 10px; color: var(--text-secondary);">Group</span>' : ''}</div>
             <div class="chat-last-message">${chat.lastMessage || 'No messages yet'}</div>
           </div>
         </div>
@@ -943,7 +902,6 @@
     };
 
     window.openChat = async (chatId) => {
-      // Unsubscribe from previous messages
       if (window.unsubscribeMessages) {
         window.unsubscribeMessages();
       }
@@ -954,7 +912,6 @@
       const chatData = chatDoc.data();
       window.currentChat = { id: chatId, ...chatData };
 
-      // Get chat name
       let chatName = chatData.name || 'Unknown';
       if (chatData.type === 'private') {
         const otherUserId = chatData.participants.find(id => id !== window.currentUser.uid);
@@ -966,7 +923,6 @@
         }
       }
 
-      // Update UI
       document.getElementById('emptyState').style.display = 'none';
       document.getElementById('chatView').style.display = 'flex';
       document.getElementById('chatName').textContent = chatName;
@@ -974,8 +930,7 @@
       document.getElementById('chatStatus').textContent = chatData.type === 'group' ? 
         `${chatData.participants.length} members` : 'Online';
 
-      // Show delete button for admin on groups
-      if (window.currentUser.email === ADMIN_EMAIL && chatData.type === 'group') {
+      if (window.currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && chatData.type === 'group') {
         document.getElementById('deleteChatBtn').style.display = 'block';
       } else {
         document.getElementById('deleteChatBtn').style.display = 'none';
@@ -983,7 +938,6 @@
 
       loadMessages(chatId);
 
-      // Mobile view
       if (window.innerWidth <= 768) {
         document.getElementById('sidebar').classList.add('hide-mobile');
         document.getElementById('mainArea').classList.add('show-mobile');
@@ -1004,7 +958,6 @@
         const messages = [];
         for (const docSnap of snapshot.docs) {
           const msgData = docSnap.data();
-          // Get sender name
           let senderName = msgData.senderName || 'Unknown';
           if (!msgData.senderName) {
             const userDoc = await getDoc(doc(db, 'users', msgData.senderId));
@@ -1030,7 +983,7 @@
         const content = msg.type === 'text' ? window.decodeBase64(msg.content) : '';
         const imageData = msg.type === 'image' ? msg.content : '';
         const time = msg.timestamp ? new Date(msg.timestamp.toMillis()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
-        const isAdmin = window.currentUser.email === ADMIN_EMAIL;
+        const isAdmin = window.currentUser && window.currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
         return `
           <div class="message ${messageClass}">
@@ -1044,7 +997,6 @@
           </div>
         `;
       }).join('');
-      // Scroll to bottom
       messagesArea.scrollTop = messagesArea.scrollHeight;
     };
 
@@ -1056,8 +1008,6 @@
       try {
         const userDoc = await getDoc(doc(db, 'users', window.currentUser.uid));
         const userName = userDoc.data()?.name || window.currentUser.email;
-
-        // Encode message
         const encodedMessage = window.encodeBase64(message);
 
         await addDoc(collection(db, 'messages'), {
@@ -1069,7 +1019,6 @@
           timestamp: serverTimestamp()
         });
 
-        // Update chat last message
         await updateDoc(doc(db, 'chats', window.currentChat.id), {
           lastMessage: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
           updatedAt: serverTimestamp()
@@ -1103,8 +1052,8 @@
         try {
           const userDoc = await getDoc(doc(db, 'users', window.currentUser.uid));
           const userName = userDoc.data()?.name || window.currentUser.email;
-
           const imageData = e.target.result;
+          
           await addDoc(collection(db, 'messages'), {
             chatId: window.currentChat.id,
             senderId: window.currentUser.uid,
@@ -1114,7 +1063,6 @@
             timestamp: serverTimestamp()
           });
 
-          // Update chat last message
           await updateDoc(doc(db, 'chats', window.currentChat.id), {
             lastMessage: 'Photo',
             updatedAt: serverTimestamp()
@@ -1139,17 +1087,20 @@
     };
 
     window.deleteCurrentChat = async () => {
-      if (!window.currentChat || window.currentUser.email !== ADMIN_EMAIL) return;
+      if (!window.currentChat) return;
+      if (!window.currentUser || window.currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+        alert('Access denied. Admin only.');
+        return;
+      }
+      
       if (confirm('Delete this group chat? All messages will be deleted.')) {
         try {
-          // Delete all messages
           const q = query(collection(db, 'messages'), where('chatId', '==', window.currentChat.id));
           const snapshot = await getDocs(q);
           snapshot.forEach(async (docSnap) => {
             await deleteDoc(doc(db, 'messages', docSnap.id));
           });
 
-          // Delete chat
           await deleteDoc(doc(db, 'chats', window.currentChat.id));
           window.currentChat = null;
           document.getElementById('emptyState').style.display = 'flex';
@@ -1160,18 +1111,29 @@
       }
     };
 
-    // Admin Functions - FIXED: Create group WITHOUT user selection, adds ALL users
     window.showAdminPanel = () => {
-      if (window.currentUser.email !== ADMIN_EMAIL) return;
+      if (!window.currentUser || window.currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+        alert('Access denied. Admin only.');
+        return;
+      }
       document.getElementById('adminPanelModal').classList.add('active');
     };
 
     window.showCreateGroupModal = async () => {
+      if (!window.currentUser || window.currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+        alert('Access denied. Admin only.');
+        return;
+      }
       document.getElementById('adminPanelModal').classList.remove('active');
       document.getElementById('createGroupModal').classList.add('active');
     };
 
     window.createGroup = async () => {
+      if (!window.currentUser || window.currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+        alert('Access denied. Admin only.');
+        return;
+      }
+      
       const groupName = document.getElementById('groupName').value.trim();
       if (!groupName) {
         alert('Please enter a group name');
@@ -1179,9 +1141,8 @@
       }
 
       try {
-        // 🚀 FIXED: Fetch ALL existing users and add them automatically
         const usersSnapshot = await getDocs(collection(db, 'users'));
-        const participants = [window.currentUser.uid]; // Admin first
+        const participants = [window.currentUser.uid];
 
         usersSnapshot.forEach((docSnap) => {
           if (docSnap.id !== window.currentUser.uid) {
@@ -1207,6 +1168,11 @@
     };
 
     window.sendBroadcast = async () => {
+      if (!window.currentUser || window.currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+        alert('Access denied. Admin only.');
+        return;
+      }
+      
       const message = document.getElementById('broadcastMessage').value.trim();
       if (!message) {
         alert('Please enter a broadcast message');
@@ -1218,11 +1184,9 @@
         const usersSnapshot = await getDocs(collection(db, 'users'));
         const encodedMessage = window.encodeBase64(message);
 
-        // Create/find broadcast chat with each user
         for (const userDoc of usersSnapshot.docs) {
           if (userDoc.id === window.currentUser.uid) continue;
 
-          // Check if private chat exists
           const q = query(
             collection(db, 'chats'),
             where('type', '==', 'private'),
@@ -1239,7 +1203,6 @@
             }
           }
 
-          // Create chat if doesn't exist
           if (!chatId) {
             const newChat = await addDoc(collection(db, 'chats'), {
               type: 'private',
@@ -1250,7 +1213,6 @@
             chatId = newChat.id;
           }
 
-          // Send message
           await addDoc(collection(db, 'messages'), {
             chatId: chatId,
             senderId: window.currentUser.uid,
@@ -1260,7 +1222,6 @@
             timestamp: serverTimestamp()
           });
 
-          // Update chat
           await updateDoc(doc(db, 'chats', chatId), {
             lastMessage: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
             updatedAt: serverTimestamp()
@@ -1275,7 +1236,6 @@
       }
     };
 
-    // UI Functions
     window.toggleTheme = () => {
       const body = document.body;
       const currentTheme = body.getAttribute('data-theme');
@@ -1294,42 +1254,8 @@
       document.getElementById('backBtn').style.display = 'none';
     };
 
-    // Load theme preference
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
-
-    // Start chat with user (for creating private chats)
-    window.startChatWithUser = async (userId) => {
-      // Check if chat already exists
-      const q = query(
-        collection(db, 'chats'),
-        where('type', '==', 'private'),
-        where('participants', 'array-contains', window.currentUser.uid)
-      );
-      const chatsSnapshot = await getDocs(q);
-      let existingChatId = null;
-
-      for (const chatDoc of chatsSnapshot.docs) {
-        const chatData = chatDoc.data();
-        if (chatData.participants.includes(userId)) {
-          existingChatId = chatDoc.id;
-          break;
-        }
-      }
-
-      if (existingChatId) {
-        openChat(existingChatId);
-      } else {
-        // Create new chat
-        const newChat = await addDoc(collection(db, 'chats'), {
-          type: 'private',
-          participants: [window.currentUser.uid, userId],
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-        openChat(newChat.id);
-      }
-    };
   </script>
 </body>
 </html>
